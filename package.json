@@ -1,0 +1,25 @@
+{
+   "name": "logtag",
+   "version": "0.1.0",
+   "description": "Tagged logging, always available",
+   "type": "module",
+   "scripts": {
+      "test": "node ./scripts/test.js"
+   },
+   "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Lowclouds/logtag.git"
+   },
+   "keywords": [
+      "tagged",
+      "logging"
+   ],
+   "author": "D Craig Denson <dcd@coastallowclouds.com>",
+   "license": "Beer License",
+   "bugs": {
+      "url": "https://github.com/Lowclouds/logtag/issues"
+   },
+   "homepage": "https://github.com/Lowclouds/logtag#readme",
+   "module": "./src/logtag.js",
+   "exports": "./src/logtag.js"
+}
