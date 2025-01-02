@@ -17,7 +17,7 @@ import LogTag from "@lowclouds/logtag"
 //....
 LogTag.init();
 ```
-Now, for each "component", however you'd like to think of that, maybe a file, or set of files, or a unified bit of functionality, define a set of tags. These correspond to specific logs that you'd like to enable or disable. One tag may be associated with many log statements, and one log statement may be enabled my one or more tags; or only by a specific set of tags. Anyway, before executing a log statement, define the tags like this:
+Now, for each "component", however you'd like to think of that, maybe a file, or set of files, or a unified bit of functionality, define a set of tags. These correspond to specific logs that you'd like to enable or disable. One tag may be associated with many log statements, and one log statement may be enabled by one or more tags; or only by a specific set of tags. Anyway, before executing a log statement, define the tags like this:
 
 
 ```js
@@ -25,12 +25,12 @@ LogTag.defTags('COMP1', ['AREA1', 'AREA2', 'AREA3']);
 
 LogTag.defTags('AFILE', ['TAGSTART', 'TAGMIDDLE', 'TAGEND']);
 
-LOGTAG.defTags('TRTL', ['INIT', 'DRAW', 'SETTINGS', 'CONTOURS']);
+LogTag.defTags('TRTL', ['INIT', 'DRAW', 'SETTINGS', 'CONTOURS']);
 ```
 The first argument to defTags is a string component name, and the second argument is an array of tag names. I like to keep them all relatively short, but that is personal preference. Now, wherever you have a debug log statement, you can replace it with the following:
 
 ```js
-LogTag.log('string log', [COMP1_AREA1, AFILE_TAGMIDDLE, TRTL_CONTOURS]);
+LogTag.log(logInfo, [COMP1_AREA1, AFILE_TAGMIDDLE, TRTL_CONTOURS]);
 ```
 
 When you run your code and it hits this line, nothing will log. Yay!
@@ -74,7 +74,7 @@ If you set **addTagsToGlobalScope** false, then the tags will be added to the Lo
 And '**puts**', what is that. It's simply aliased to 'console.log'. I used to program in TCL, so you can write:
 
 ```js
-puts('my log', TRTL_INIT); 
+puts(my_log, TRTL_INIT); 
 ```
 
 ### LogTag.defTags(component_name, string_array_of_tag_names)
@@ -86,6 +86,15 @@ The LogTag.defTags method creates variables by gluing the component name to the 
 complete_tagname = component_name + '_' + tag_name;
 ```
 The generated tags are also immutable constants, so, if you're using HMR and you redefine the tags in a file that gets replaced, it will break when trying to redefine the constants. You'll need to reload the whole shebang. I might try to work around this.
+
+
+### LogTag.log(stuff, [tags])
+
+This function tests whether the tags are set and if so, calls console.log(stuff)
+
+**tags** is optional. If not supplied, the call devolves to console.log(stuff).
+
+If supplied, it must be an array of one or more tags as defined by defTags. Rationale for requiring an array is later under **Am I missing something?**, below.
 
 ### LogTag.set(...tags)
 
@@ -102,7 +111,6 @@ LogTag.clear(TRTL_INIT, AFILE_TAGEND); // clear these two tags, if set
 LogTag.clearAll();                     // clear all set tags
 LogTag.clear();                        // ends up calling clearAll()
 ```
-
 ### LogTag.isSet(tag) or LogTag.areSet(tags)
 
 Test tag to see if it is set. This is useful if you have to do a lot of work to create the log:
@@ -138,7 +146,7 @@ LogTag.clear(LogTag.ALLOF);     // turn it off programmatically, or on console.
 Alternately, you can put the ALLOF tag directly in the log statement. Here, it works slightly differently: all tags following LogTag.ALLOF must be set if the log hasn't fired by the time it processes the LogTag.ALLOF tag. Example:
 
 ```js
-puts('interesting info', [TRTL_SETTINGS, LogTag.ALLOF, NTRP_PROGRESS, NTRP_SETTINGS]);
+puts(interesting_info, [TRTL_SETTINGS, LogTag.ALLOF, NTRP_PROGRESS, NTRP_SETTINGS]);
 ```
 This will log if TRTL_SETTINGS is set, but if not, then only if NTRP_PROGRESS **and** NTRP_SETTINGS are set. Obviously, putting LogTag.ALLOF first in the list of tags will make it operate just like setting LogTag.ALLOF globably. In other words. LogTag.ALLOF does not have to be set in this case, its mere presence turns the mode on or off for this one log statement.
 
