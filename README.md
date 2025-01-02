@@ -42,7 +42,7 @@ LogTag.set(TRTL_CONTOURS)
 ```
 Note, that the defTags, above, created a global called, TRTL_CONTOURS, which you can use from the console.
 
-The next time, and every time after, the code reaches the log, 'string log' will output to the console. When you're tired of seeing it, turn it off with:
+The next time, and every time after, the code reaches the log, it will output to the console. When you're tired of seeing it, turn it off with:
 
 ```js
 LogTag.clear(TRTL_CONTOURS)
@@ -71,7 +71,7 @@ If you set **addLogTagToGlobalScope** false, then you can't get to it from the c
 
 If you set **addTagsToGlobalScope** false, then the tags will be added to the LogTag object. This will keep your global namespace cleaner, but you'll have longer tag names on the console and in your program, i.e. LogTag.TRTL_CONTOURS. If addLogTagToGlobalScope is false, this happens automatically.
 
-And '**puts**', what is that. It's simply aliased to 'console.log'. I used to program in TCL, so you can write:
+And '**puts**', what is that. It's simply aliased to 'LogTag.log'. I used to program in TCL. Anyway you can write:
 
 ```js
 puts(my_log, TRTL_INIT); 
@@ -80,7 +80,7 @@ puts(my_log, TRTL_INIT);
 ### LogTag.defTags(component_name, string_array_of_tag_names)
 Note, too, that, again, by default, every tag is also injected into the global namespace. Horrors. This means you should also choose your component and tag names carefully.
 
-The LogTag.defTags method creates variables by gluing the component name to the tag anme with an underscore, i.e. 
+The LogTag.defTags method creates variables by gluing the component name to the tag name with an underscore, i.e. 
 
 ```js
 complete_tagname = component_name + '_' + tag_name;
@@ -100,7 +100,7 @@ If supplied, it must be an array of one or more tags as defined by defTags. Rati
 
 Contrary to defTags(...) and log(...), set accepts an arbitrary number of tags as arguments and then sets them. Sets as in ors them into a Uint32. In the original implementation of this, I used BigInts, but didn't really need the range per component, although I quickly overran 32bit integers. So this implementation uses Uint32Arrays with one Uint32 per component. Each component can then have 32 unique tags; if you need more per 'component', you'll need to break it into sections: 'PART1', ..., 'PARTN'. With 255 possible components, it should be enough for most mortals. 
 
-On a side note, component zero is reserved for LogTag, which has a single tag, ALLOF, which is local to the LogTag object, i.e. LogTag.ALLOF. 31 whole bits and an array slot wasted! More later.
+On a side note, component zero is reserved for LogTag, which has a single tag, ALLOF, which is local to the LogTag object, i.e. LogTag.ALLOF. Sheesh, 31 whole bits and an array slot wasted! More later.
 
 ### LogTag.clear(...tag) or LogTag.clearAll()
 
@@ -113,7 +113,8 @@ LogTag.clear();                        // ends up calling clearAll()
 ```
 ### LogTag.isSet(tag) or LogTag.areSet(tags)
 
-Test tag to see if it is set. This is useful if you have to do a lot of work to create the log:
+Test tag to see if it is set. This is useful if you have to do a lot of work to create the log.
+
 **areSet** will test if all of an array of tags are set
 
 ```js
@@ -122,10 +123,10 @@ if (LogTag.isSet(MY_BLOATEDTAG) {
    //.... do a bunch work to create result ...
 
    LogTag.log(result_value);
-   // or really, just 
-   console.log(result_value);
    // or, hey
    puts(result_value);
+   // or really, just 
+   console.log(result_value);
 }
 ```
 
@@ -133,7 +134,7 @@ if (LogTag.isSet(MY_BLOATEDTAG) {
 
 By default, if **any** tag in a log statement is set, the log happens. This is ANYOF mode, but since there are only two modes, ANYOF and ALLOF, we only need to turn one of them off or on. ALLOF it is.
 
-When areSet is operating in ALLOF mode, all tags in the log statement must be set before the log happens. This is mostly obscure, but you might find a use for it. To us ALLOF mode, do this:
+When areSet is operating in ALLOF mode, all tags in the log statement must be set before the log happens. This is mostly obscure, but you might find a use for it. To use ALLOF mode, do this:
 
 ```js
 LogTag.set(LogTag.ALLOF);       // turn it on programmatically, or on console.
@@ -148,7 +149,7 @@ Alternately, you can put the ALLOF tag directly in the log statement. Here, it w
 ```js
 puts(interesting_info, [TRTL_SETTINGS, LogTag.ALLOF, NTRP_PROGRESS, NTRP_SETTINGS]);
 ```
-This will log if TRTL_SETTINGS is set, but if not, then only if NTRP_PROGRESS **and** NTRP_SETTINGS are set. Obviously, putting LogTag.ALLOF first in the list of tags will make it operate just like setting LogTag.ALLOF globably. In other words. LogTag.ALLOF does not have to be set in this case, its mere presence turns the mode on or off for this one log statement.
+This will log if TRTL_SETTINGS is set, but if not, then only if NTRP_PROGRESS **and** NTRP_SETTINGS are set. Obviously, putting LogTag.ALLOF first in the list of tags will make it operate just like setting LogTag.ALLOF globably. Note that LogTag.ALLOF does not have to be set in this case, its mere presence turns the mode on or off for this one log statement. Indeed, if you use it in the log statement, then it **should not** be set.
 
 ## Am I missing something?
 
@@ -158,12 +159,16 @@ Yes. This design started while debugging realtime firmware in printers, with thr
   * Speed - i.e. testing of tags should be quick
   * Ability to compile it away in production
 
-The last two are related because a key part of the implementation was a macro that a) could be defined away, and b) performed the log tag tests before evaluating the string argument. In other words, the macro turned
+The last two are related because a key part of the implementation was a macro that 
+
+> a) could be defined away, and 
+> b) performed the log tag tests before evaluating the log value. In other words, the macro turned
 
 ```js
 puts(info, [t1,t2,..., t3]);
 /// into 
 if (LogTag.areSet([t1,t2,...,t3]) {puts(info);}
+// which is clumsy to type in every time
 ```
 
-I haven't figured out how to make macros work in Javascript, yet. There is an old cpp.js library that will support this macro, and that is why LogTag.log() takes only two args, instead of a bunch of args. cpp.js does not support variadic macros - it barely supports function macros. Anyway, if you want to use this functionality; but lose it in production code, I'd recommend looking into cpp.js. Or, better yet, tell me how to get Babel macros to work.
+I haven't figured out how to make macros work in Javascript, yet. There is an old cpp.js library that will support this macro, and that is why LogTag.log() takes only two args, instead of a bunch of args. cpp.js does not support variadic macros - it barely supports function macros. Anyway, if you want to use this functionality, but lose it in production code, I'd recommend looking into cpp.js. Or, better yet, tell me how to get Babel macros to work.
