@@ -1,5 +1,5 @@
 {
-   "name": "logtag",
+   "name": "@lowclouds/logtag",
    "version": "0.1.0",
    "description": "Tagged logging, always available",
    "type": "module",
@@ -11,6 +11,8 @@
       "url": "git+https://github.com/Lowclouds/logtag.git"
    },
    "keywords": [
+      "tags",
+      "logs",
       "tagged",
       "logging"
    ],
