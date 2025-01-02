@@ -161,8 +161,8 @@ Yes. This design started while debugging realtime firmware in printers, with thr
 
 The last two are related because a key part of the implementation was a macro that 
 
-> a) could be defined away, and 
-> b) performed the log tag tests before evaluating the log value. In other words, the macro turned
+   * could be defined away, and 
+   * performed the log tag tests before evaluating the log value. In other words, the macro turned
 
 ```js
 puts(info, [t1,t2,..., t3]);
