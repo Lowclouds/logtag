@@ -77,7 +77,7 @@ And '**puts**', what is that. It's simply aliased to 'LogTag.log'. I used to pro
 puts(my_log, TRTL_INIT); 
 ```
 
-### LogTag.defTags(component_name, string_array_of_tag_names)
+### LogTag.defTags(component_name, string_array_of_tag_names, scope=theGlobalObject)
 Note, too, that, again, by default, every tag is also injected into the global namespace. Horrors. This means you should also choose your component and tag names carefully.
 
 The LogTag.defTags method creates variables by gluing the component name to the tag name with an underscore, i.e. 
@@ -87,6 +87,7 @@ complete_tagname = component_name + '_' + tag_name;
 ```
 The generated tags are also immutable constants, so, if you're using HMR and you redefine the tags in a file that gets replaced, it will break when trying to redefine the constants. You'll need to reload the whole shebang. I might try to work around this.
 
+By default, the tags are injected into the global namespace, and the LogTag.init() options can modify that. However, you can directly supply any object as the scope for the generated tags. This is used internally to add ALLOF to the LogTag object.
 
 ### LogTag.log(stuff, [tags])
 
