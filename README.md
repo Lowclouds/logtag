@@ -55,7 +55,9 @@ Ok, those are the essentials of usage; how does this work?
 ## What nasty things are happening here?
 
 ### LogTag.init(optional_config)
-Well, if you're a purist, we can still get along, but you might not be all that happy about this. LogTag.init(), by default, will put two properties into the global namespace, '**LogTag**', and '**puts**'. Not only that, but they will be **immutable constants**, but enumerable. That's the only way you'll be able to see them from the console. You can import LogTag into each file that uses it, but LogTag.init() should only be called once in your app. This is because every method is static and there is only one set of tags for the entire app. 
+Well, if you're a purist, we can still get along, but you might not be all that happy about this. LogTag.init(), by default, will put two properties into the global namespace, '**LogTag**', and '**puts**'. These will be **immutable, enumerable constants**. Inserting them in the global scope is the only way you'll be able to access them from the console. 
+
+LogTag.init() should only be called once in your app. This is because every method is static and there is only one set of tags for the entire app. 
 
 **optional_config** is an object with the following possibilities:
 
