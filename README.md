@@ -69,9 +69,9 @@ let opts = {
 }
 ```
 
-If you set **addLogTagToGlobalScope** false, then you can't get to it from the console. I suppose, you could add a programming interface to access it. More later.
+If you set **addLogTagToGlobalScope** false, then you can't get to it from the console. I suppose, you could add a programming interface to access it from a web page.
 
-If you set **addTagsToGlobalScope** false, then the tags will be added to the LogTag object. This will keep your global namespace cleaner, but you'll have longer tag names on the console and in your program, i.e. LogTag.TRTL_CONTOURS. If addLogTagToGlobalScope is false, this happens automatically.
+If you set **addTagsToGlobalScope** false, then the tags you create will be added to the LogTag object. This will keep your global namespace cleaner, but you'll have longer tag names on the console and in your program, i.e. LogTag.TRTL_CONTOURS. If addLogTagToGlobalScope is false, this happens automatically.
 
 And '**puts**', what is that. It's simply aliased to 'LogTag.log'. I used to program in TCL. Anyway you can write:
 
@@ -80,16 +80,19 @@ puts(my_log, TRTL_INIT);
 ```
 
 ### LogTag.defTags(component_name, string_array_of_tag_names, scope=theGlobalObject)
-Note, too, that, again, by default, every tag is also injected into the global namespace. Horrors. This means you should also choose your component and tag names carefully.
+Once again, by default, every tag is also injected into the global namespace. Horrors. This means you should also choose your component and tag names carefully.
 
 The LogTag.defTags method creates variables by gluing the component name to the tag name with an underscore, i.e. 
 
 ```js
 complete_tagname = component_name + '_' + tag_name;
 ```
+
+**Please** do not use an empty component_name. That is reserved for LogTag, and there's currently no protection against that. You will be surprised if you do.
+
 The generated tags are also immutable constants, so, if you're using HMR and you redefine the tags in a file that gets replaced, it will break when trying to redefine the constants. You'll need to reload the whole shebang. I might try to work around this.
 
-By default, the tags are injected into the global namespace, and the LogTag.init() options can modify that. However, you can directly supply any object as the scope for the generated tags. This is used internally to add ALLOF to the LogTag object.
+By default, the tags are injected into the global namespace, but using the LogTag.init() options above, you can modify that. However, you can directly supply any object as the scope for the generated tags. This is used internally to add ALLOF to the LogTag object.
 
 ### LogTag.log(stuff, [tags])
 
@@ -174,4 +177,6 @@ if (LogTag.areSet([t1,t2,...,t3]) {puts(info);}
 // which is clumsy to type in every time
 ```
 
-I haven't figured out how to make macros work in Javascript, yet. There is an old cpp.js library that will support this macro, and that is why LogTag.log() takes only two args, instead of a bunch of args. cpp.js does not support variadic macros - it barely supports function macros. Anyway, if you want to use this functionality, but lose it in production code, I'd recommend looking into cpp.js. Or, better yet, tell me how to get Babel macros to work.
+I haven't totally figured out how to make macros work in Javascript, yet, but I do have a working version of a 'puts' Babel plugin macro that will produce this transformation at build time. Still working out how to put it into an  existing project.
+
+ There is also an old cpp.js library that will support this macro, and that is why LogTag.log() takes only two args, instead of a bunch of args. cpp.js does not support variadic macros - it barely supports function macros. Anyway, if you want to use this functionality, but lose it in production code, I'd recommend looking into cpp.js.
