@@ -1,6 +1,8 @@
 # @lowclouds/logtag
 Tagged logging that is always available
 
+Note: if you started with the 0.1.0 version, please use this version instead to avoid some invisible failures.
+
 Do you hate having to comment and uncomment log calls when trying to debug? If so, then this library is for you. It allows you to define tags, which you can individually set or clear from the console while your code is running in a browser. If your code is on the server, well maybe you can hack this to make it work there; I don't know.
 
 First, how to set up and use it.
@@ -94,7 +96,7 @@ The LogTag.defTags method creates variables by gluing the component name to the 
 complete_tagname = component_name + '_' + tag_name;
 ```
 
-You can use an empty component_name, if you like.
+You can use an empty component_name, if you like, in which case the leading "_" is removed from tag_name.
 
 The generated tags are also immutable constants, so, if you're using HMR and you redefine the tags in a file that gets replaced, it will break when trying to redefine the constants. You'll need to reload the whole shebang.
 
@@ -108,7 +110,7 @@ This function tests whether the tags are set and if so, calls console.log(stuff)
 
 ### LogTag.set(...tags)
 
-LogTag.set accepts an arbitrary number of tags as arguments and then sets them. Sets as in ors them into a BigInt. BigInt can be slow if you use a lot of tags at once. I haven't analyzed it. But it gives you plenty of room for adding tags.
+LogTag.set accepts an arbitrary number of tags as arguments and then sets them. Sets, as in ors them into a BigInt. 
 
  The single tag defined by LogTag is ALLOF, which is always local to the LogTag object, i.e. LogTag.ALLOF. 
 
@@ -184,3 +186,23 @@ if (LogTag.areSet([t1,t2,...,t3]) {puts(info);}
 I haven't totally figured out how to make macros work in Javascript, yet, but I do have a working version of a 'puts' Babel plugin macro that will produce this transformation at build time. Still working out how to put it into an  existing project.
 
  There is also an old cpp.js library that will support this macro, and that is why LogTag.log() takes only two args, instead of a bunch of args. cpp.js does not support variadic macros - it barely supports function macros. Anyway, if you want to use this functionality, but lose it in production code, I'd recommend looking into cpp.js.
+
+With respect to speed, the first try at this library using Uint32 ArrayBuffers had a fundamental flaw that limited you to 5 components with 32 tags each, and it failed silently when exceeding that limit. For that reason, this current version uses BigInts which I have used successfully, but still with fewer overall tags. Since BigInt operations aren't constant time, you could get some performance degradation using many (large) tags. I haven't quantified the penalty. It would be straight-foreward to create a correct, and constant time, version with the penalty of more complex tags or limited tags. Two possible notions each requiring separate component and area parameters:
+
+```js
+   LogTag.log(stuff, component, ...tags)
+
+// or
+
+   LogTag.log(stuff, ...tags)
+
+// where each tag is either an object or array containing:
+
+   {component: ckey, tag: areaBit}
+
+// or maybe
+
+   [component, ...tags]
+```
+
+These would be a bit clumsier to type, and to parse using a macro, but could actually support a large number of components and still be pretty speedy. 
