@@ -1,3 +1,9 @@
+*.*~
+\#*#
+*#.*#*
+/*/#*#
 *~
 /README.html
-
+test-out/
+node-modules/
+/node_modules/
