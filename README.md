@@ -1,7 +1,7 @@
 # @lowclouds/logtag
 Tagged logging that is always available
 
-Do you hate having to comment and uncomment log calls when trying to debug? If so, then this library is for you. It allows you to define up to 255 'components', each with up to 32 tags, which you can individually set or clear from the console while your code is running in a browser. If your code is on the server, well maybe you can hack this to make it work there; I don't know.
+Do you hate having to comment and uncomment log calls when trying to debug? If so, then this library is for you. It allows you to define tags, which you can individually set or clear from the console while your code is running in a browser. If your code is on the server, well maybe you can hack this to make it work there; I don't know.
 
 First, how to set up and use it.
 
@@ -31,6 +31,8 @@ The first argument to defTags is a string component name, and the second argumen
 
 ```js
 LogTag.log(logInfo, [COMP1_AREA1, AFILE_TAGMIDDLE, TRTL_CONTOURS]);
+   or
+LogTag.log(logInfo, COMP1_AREA1, AFILE_TAGMIDDLE, TRTL_CONTOURS);
 ```
 
 When you run your code and it hits this line, nothing will log. Yay!
@@ -77,10 +79,14 @@ And '**puts**', what is that. It's simply aliased to 'LogTag.log'. I used to pro
 
 ```js
 puts(my_log, TRTL_INIT); 
+
+  ===
+
+LogTag.log(my_log, TRTL_INIT);
 ```
 
 ### LogTag.defTags(component_name, string_array_of_tag_names, scope=theGlobalObject)
-Once again, by default, every tag is also injected into the global namespace. Horrors. This means you should also choose your component and tag names carefully.
+Once again, by default, every tag is also injected into the global namespace. Horrors. This means you should also choose your component and tag names carefully. On a side note, having used this technique for 30 years or more, having a single space for all the logtags has proven useful more than once: it's often difficult to track down what the root of a problem is. Turning on tags in multiple interacting parts of code, without flooding yourself with ocean liners of text is so much better than LOGLEVEL=DEBUG.
 
 The LogTag.defTags method creates variables by gluing the component name to the tag name with an underscore, i.e. 
 
@@ -88,25 +94,23 @@ The LogTag.defTags method creates variables by gluing the component name to the 
 complete_tagname = component_name + '_' + tag_name;
 ```
 
-**Please** do not use an empty component_name. That is reserved for LogTag, and there's currently no protection against that. You will be surprised if you do.
+You can use an empty component_name, if you like.
 
-The generated tags are also immutable constants, so, if you're using HMR and you redefine the tags in a file that gets replaced, it will break when trying to redefine the constants. You'll need to reload the whole shebang. I might try to work around this.
+The generated tags are also immutable constants, so, if you're using HMR and you redefine the tags in a file that gets replaced, it will break when trying to redefine the constants. You'll need to reload the whole shebang.
 
-By default, the tags are injected into the global namespace, but using the LogTag.init() options above, you can modify that. However, you can directly supply any object as the scope for the generated tags. This is used internally to add ALLOF to the LogTag object.
+By default, the tags are injected into the global namespace, but using the LogTag.init() options above, you can modify that. Morever, you can directly supply any object as the scope for the generated tags. This is used internally to add ALLOF to the LogTag object.
 
-### LogTag.log(stuff, [tags])
+### LogTag.log(stuff, ...tags)
 
 This function tests whether the tags are set and if so, calls console.log(stuff)
 
-**tags** is optional. If not supplied, the call devolves to console.log(stuff).
-
-If supplied, it must be an array of one or more tags as defined by defTags. Rationale for requiring an array is later under **Am I missing something?**, below.
+**tags** are optional. If not supplied, the call devolves to console.log(stuff).
 
 ### LogTag.set(...tags)
 
-Contrary to defTags(...) and log(...), set accepts an arbitrary number of tags as arguments and then sets them. Sets as in ors them into a Uint32. In the original implementation of this, I used BigInts, but didn't really need the range per component, although I quickly overran 32bit integers. So this implementation uses Uint32Arrays with one Uint32 per component. Each component can then have 32 unique tags; if you need more per 'component', you'll need to break it into sections: 'PART1', ..., 'PARTN'. With 255 possible components, it should be enough for most mortals. 
+LogTag.set accepts an arbitrary number of tags as arguments and then sets them. Sets as in ors them into a BigInt. BigInt can be slow if you use a lot of tags at once. I haven't analyzed it. But it gives you plenty of room for adding tags.
 
-On a side note, component zero is reserved for LogTag, which has a single tag, ALLOF, which is local to the LogTag object, i.e. LogTag.ALLOF. Sheesh, 31 whole bits and an array slot wasted! More later.
+ The single tag defined by LogTag is ALLOF, which is always local to the LogTag object, i.e. LogTag.ALLOF. 
 
 ### LogTag.clear(...tag) or LogTag.clearAll()
 
@@ -117,7 +121,7 @@ LogTag.clear(TRTL_INIT, AFILE_TAGEND); // clear these two tags, if set
 LogTag.clearAll();                     // clear all set tags
 LogTag.clear();                        // ends up calling clearAll()
 ```
-### LogTag.isSet(tag) or LogTag.areSet(tags)
+### LogTag.isSet(tag) or LogTag.areSet(...tags)
 
 Test tag to see if it is set. This is useful if you have to do a lot of work to create the log.
 
@@ -155,7 +159,7 @@ Alternately, you can put the ALLOF tag directly in the log statement. Here, it w
 ```js
 puts(interesting_info, [TRTL_SETTINGS, LogTag.ALLOF, NTRP_PROGRESS, NTRP_SETTINGS]);
 ```
-This will log if TRTL_SETTINGS is set, but if not, then only if NTRP_PROGRESS **and** NTRP_SETTINGS are set. Obviously, putting LogTag.ALLOF first in the list of tags will make it operate just like setting LogTag.ALLOF globably. Note that LogTag.ALLOF does not have to be set in this case, its mere presence turns the mode on or off for this one log statement. Indeed, if you use it in the log statement, then it **should not** be set.
+This will log if TRTL_SETTINGS is set, but if not, then only if NTRP_PROGRESS **and** NTRP_SETTINGS are set. Obviously, putting LogTag.ALLOF first in the list of tags will make it operate just like setting LogTag.ALLOF globably. Note that LogTag.ALLOF does not have to be set in this case, its mere presence turns the mode on or off for this one log statement. Indeed, if you use it in the log statement, then it usually **should not** be set.
 
 ## Am I missing something?
 

@@ -12,8 +12,8 @@
       "url": "git+https://github.com/Lowclouds/logtag.git"
    },
    "keywords": [
+      "log",
       "tags",
-      "logs",
       "tagged",
       "logging"
    ],
@@ -24,5 +24,10 @@
    },
    "homepage": "https://github.com/Lowclouds/logtag#readme",
    "module": "./dist/logtag.js",
-   "exports": "./dist/logtag.js"
+   "exports": "./dist/logtag.js",
+   "devDependencies": {
+      "@eslint/js": "^9.18.0",
+      "eslint": "^9.18.0",
+      "globals": "^15.14.0"
+   }
 }
