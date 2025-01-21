@@ -1,11 +1,11 @@
 {
    "name": "@lowclouds/logtag",
-   "version": "0.2.0",
+   "version": "0.3.0",
    "description": "Tagged logging, always available",
    "type": "module",
    "scripts": {
-      "build": "rm -rf ./dist && mkdir dist && cp ./src/logtag.js ./dist",
-      "test": "node ./scripts/test.js && node ./scripts/test2.js"
+      "dist": "node ./scripts/dist.js",
+      "test": "node ./scripts/do-tests.js"
    },
    "repository": {
       "type": "git",
@@ -24,10 +24,5 @@
    },
    "homepage": "https://github.com/Lowclouds/logtag#readme",
    "module": "./dist/logtag.js",
-   "exports": "./dist/logtag.js",
-   "devDependencies": {
-      "@eslint/js": "^9.18.0",
-      "eslint": "^9.18.0",
-      "globals": "^15.14.0"
-   }
+   "exports": "./dist/logtag.js"
 }

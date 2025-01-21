@@ -20,3 +20,6 @@ try {
 
 LogTag.set(LogTag.WORKER_TASK1);
 puts(`LogTag.WORKER_TASK2 is ${LogTag.WORKER_TASK2}`, LogTag.WORKER_TASK1);
+let [cmpt, tag] = LogTag.decodeTag(LogTag.WORKER_TASK2);
+puts(`LogTag.WORKER_TASK2 component id is ${cmpt}`);
+puts(`LogTag.WORKER_TASK2 effective tag is ${tag}`);
