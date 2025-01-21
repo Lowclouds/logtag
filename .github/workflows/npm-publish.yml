@@ -16,11 +16,11 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
-      - run: npm build
+      - run: npm dist
       - run: npm test
 
   publish-npm:
-    needs: build
+    needs: dist
     runs-on: ubuntu-latest
     permissions:
       contents: read
