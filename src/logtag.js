@@ -156,15 +156,15 @@ export default class LogTag {
    }
 
    // doesn't seem to be a way to avoid evaluating o. oh well
-   static log(o, tags=[]) {
+  static log(o, ...tags) {
 //      console.log(`log: tags are: ${tags}`);
-      if (tags && !Array.isArray(tags)) tags = [tags];
-      if (tags.length == 0 || LogTag.areSet(tags)) {
-         console.log(o);
-         return true;
-      }
-      return false;
-   }
+    if (tags.length) { tags = tags.flat(); }
+    if (tags.length === 0 || LogTag.areSet(tags)) {
+      console.log(o);
+      return true;
+    }
+    return false;
+  }
 
    // returns component key for name, 
    // aka, array index of component
