@@ -14,6 +14,7 @@ for (let c = 0; c< 4; c++) {
   }
   for (let a=1; a <=32; a++) {
     ta[c][1].push('AREA' + a);
+    if (c === 0 && a === 31) break;
   }
 }
 
@@ -23,15 +24,14 @@ for (let c = 0; c< 4; c++) {
   LogTag.defTags(ta[c][0], ta[c][1]);
 }
 
-puts('\nLogTag.set(C1_AREA1); //Setting C1_AREA1, and checking');
+puts('\n **** Setting tags, and checking ****\nLogTag.set(C1_AREA1)');
+console.log('LogTag.set(C1_AREA32, C2_AREA1, C2_AREA32)');
+console.log('LogTag.set(LogTag.AREA1, LogTag.AREA31)\n');
 LogTag.set(C1_AREA1);
-LogTag.set(C1_AREA32);
-LogTag.set(C2_AREA1);
-LogTag.set(C2_AREA32);
-LogTag.set(LogTag.AREA1);
-LogTag.set(LogTag.AREA32);
+LogTag.set(C1_AREA32, C2_AREA1, C2_AREA32);
+LogTag.set(LogTag.AREA1,LogTag.AREA31);
 console.log(`C1_AREA1 == ${C1_AREA1.toString(16)}`);
-puts("puts('LogTag.isSet(C1_AREA1)'); //checks for set tag");
+puts("puts('LogTag.isSet(tag) checks for set tag");
 puts(`C1_AREA1 (0x${C1_AREA1.toString(16)}) is ${LogTag.isSet(C1_AREA1) ? '' : 'not '}set`);
 puts(`C1_AREA2 (0x${C1_AREA2.toString(16)}) is ${LogTag.isSet(C1_AREA2) ? '' : 'not '}set`);
 puts(`C1_AREA32 (0x${C1_AREA32.toString(16)}) is ${LogTag.isSet(C1_AREA32) ? '' : 'not '}set`);
@@ -40,7 +40,7 @@ puts(`C2_AREA2 (0x${C2_AREA2.toString(16)}) is ${LogTag.isSet(C2_AREA2) ? '' : '
 puts(`C2_AREA32 (0x${C2_AREA32.toString(16)}) is ${LogTag.isSet(C2_AREA32) ? '' : 'not '}set`);
 puts(`LogTag.AREA1 (0x${LogTag.AREA1.toString(16)}) is ${LogTag.isSet(LogTag.AREA1) ? '' : 'not '}set`);
 puts(`LogTag.AREA2 (0x${LogTag.AREA2.toString(16)}) is ${LogTag.isSet(LogTag.AREA2) ? '' : 'not '}set`);
-puts(`LogTag.AREA32 (0x${LogTag.AREA32.toString(16)}) is ${LogTag.isSet(LogTag.AREA32) ? '' : 'not '}set`);
+puts(`LogTag.AREA31 (0x${LogTag.AREA31.toString(16)}) is ${LogTag.isSet(LogTag.AREA31) ? '' : 'not '}set`);
 
 puts("\nputs('Hello from C1_AREA1',[C1_AREA1, C1_AREA2, LogTag.AREA3]) should log");
 puts('...Hello from C1_AREA1', C1_AREA1, C1_AREA2, LogTag.AREA3);

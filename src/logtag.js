@@ -87,7 +87,7 @@ export default class LogTag {
       for (const tag of tags) {
          let cmpnt, effectiveTag;
          [cmpnt, effectiveTag] = LogTag.decodeTag(tag);
- // console.log('in set, setting tag: ' + tag + ', cmpnt: ' + cmpnt + ', eff tag: ' + effectiveTag);
+// console.log('in set, setting tag: ' + tag + ', cmpnt: ' + cmpnt + ', eff tag: ' + effectiveTag);
          if (! (typeof LogTag.#components[cmpnt]) === 'string') {
             throw new Error(`unknown component: ${cmpnt} in tag, ${tag}`, 'logtag.js#set');
          }
@@ -170,24 +170,26 @@ export default class LogTag {
    // aka, array index of component
    static #getComponentByName(name) {
 
-      //console.log(`in getComponent with name: ${name}`);
-
-      let cmpnts = LogTag.#components;
-      if (cmpnts.length === LogTag.#maxComponents) {
-         return LogTag.#maxComponents; // we are full
-      }
-      let indx = cmpnts.indexOf(name);
+ //console.log(`in getComponent with name: ${name}`);
+     let cmpnts = LogTag.#components;
+     let indx = cmpnts.indexOf(name);
 
 // console.log(`in getComponent with name: ${name}, indx: ${indx}`);
 
-      if (indx === -1) {
-         cmpnts.push(name);
-         LogTag.#buffer.resize(LogTag.#buffer.byteLength + LogTag.#bytesPerComponent);
-         indx = cmpnts.length - 1;
+     if (indx === -1) {
+       if (cmpnts.length === LogTag.#maxComponents) {
+         console.warn(`Can't add more components. full at: ${LogTag.#maxComponents}`);
+         return LogTag.#maxComponents; // we are full
+       }
+
+       cmpnts.push(name);
+       LogTag.#buffer.resize(LogTag.#buffer.byteLength + LogTag.#bytesPerComponent);
+       indx = cmpnts.length - 1;
 // console.log(`added component name: ${name}, indx: ${indx}, cmpnts length: ${cmpnts.length}`);
       } 
-      return indx;
+     return indx;
    }
+
    // component: a string name of the component
    // tags: an array of tag names
    // scope: optional object scope for generated tags, default is the global scope
@@ -208,9 +210,9 @@ export default class LogTag {
          throw new RangeError(`Can't add component: there are already ${LogTag.#maxComponents}`, 'LogTag.defTags');
       case 0:
          scope = LogTag;
-         for (let indx = 0; indx < tags.length && indx < LogTag.#maxTagNum ; indx++) {
+         for (let indx = 0; indx < tags.length && indx < LogTag.#maxTagNum - 1n; indx++) {
             map[tags[indx]] = 2n**BigInt(indx+1);
-//  console.log(`creating LogTag scope Tag: ${tags[indx]} = ${map[tags[indx]].toString(16)}`);            
+  console.log(`creating LogTag scope Tag: ${tags[indx]} = ${map[tags[indx]].toString(16)}`);            
          }
          classConst(scope, map);
          break;
@@ -226,7 +228,7 @@ export default class LogTag {
             }
             // LogTag.tag instead of LogTag._tag
             map[prefix + tag] = cmpt | (2n**BigInt(indx));
-// console.log(`adding tag ${prefix + tag} = ${map[prefix + tag].toString(16)}`);
+ console.log(`adding tag ${prefix + tag} = ${map[prefix + tag].toString(16)}`);
          });
          classConst(scope, map);
       }
