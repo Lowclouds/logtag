@@ -212,7 +212,7 @@ export default class LogTag {
          scope = LogTag;
          for (let indx = 0; indx < tags.length && indx < LogTag.#maxTagNum - 1n; indx++) {
             map[tags[indx]] = 2n**BigInt(indx+1);
-  console.log(`creating LogTag scope Tag: ${tags[indx]} = ${map[tags[indx]].toString(16)}`);            
+// console.log(`creating LogTag scope Tag: ${tags[indx]} = ${map[tags[indx]].toString(16)}`);            
          }
          classConst(scope, map);
          break;
@@ -228,7 +228,7 @@ export default class LogTag {
             }
             // LogTag.tag instead of LogTag._tag
             map[prefix + tag] = cmpt | (2n**BigInt(indx));
- console.log(`adding tag ${prefix + tag} = ${map[prefix + tag].toString(16)}`);
+// console.log(`adding tag ${prefix + tag} = ${map[prefix + tag].toString(16)}`);
          });
          classConst(scope, map);
       }
