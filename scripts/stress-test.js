@@ -56,6 +56,40 @@ t1 = performance.now();
 
 console.log(`\nSet/isSet/clear - ${ntries} times: ${dround(t1-t0, 3)} ms\n`);
 
+t0 = performance.now();
+for (let t = 0; t< ntries; t++) {
+   let tags = [];
+   tags.push( alltags[Math.trunc(alltags.length * Math.random())]);
+   tags.push( alltags[Math.trunc(alltags.length * Math.random())]);
+   tags.push( alltags[Math.trunc(alltags.length * Math.random())]);
+
+// console.log(tags);
+   const [t0,t1,t2] = tags;
+   LogTag.set(t0, t1, t2);
+   LogTag.areSet(t0, t1, t2);
+   LogTag.clear(t0, t1, t2);
+}
+t1 = performance.now();
+
+console.log(`\nset/areSet/clear with multiple tag parameters- ${ntries} times: ${dround(t1-t0, 3)} ms\n`);
+
+t0 = performance.now();
+for (let t = 0; t< ntries; t++) {
+   let tags = [];
+   tags.push( alltags[Math.trunc(alltags.length * Math.random())]);
+   tags.push( alltags[Math.trunc(alltags.length * Math.random())]);
+   tags.push( alltags[Math.trunc(alltags.length * Math.random())]);
+
+// console.log(tags);
+
+   LogTag.set(tags);
+   LogTag.areSet(tags);
+   LogTag.clear(tags);
+}
+t1 = performance.now();
+
+console.log(`\nset/areSet/clear with array of tags- ${ntries} times: ${dround(t1-t0, 3)} ms\n`);
+
 
 function dround(f,d) {
    d=Math.round(d);

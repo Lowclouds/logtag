@@ -77,14 +77,24 @@ export default class LogTag {
       classConst(LogTag, {ALLOF: 1n,});
    }
 
+   // this returns a BigInt
+   static encodeTag(cmpnt, tagNum) {
+      LogTag.#decodeTag[0] = 2**tagNum; // we assume tagNum < 32/#maxTagNum
+      LogTag.#decodeTag[1] = cmpnt;  
+      return BigInt(LogTag.#decodeBuf[0]);
+   }
+
    static decodeTag(tag) {
       LogTag.#decodeBuf[0] = tag;
       return [LogTag.#decodeTag[1], LogTag.#decodeTag[0]];
-
    }
 
    static set(...tags) {
-      for (const tag of tags) {
+      if (Array.isArray(tags[0])) {
+         tags = tags[0];
+      }
+
+      for (const tag of tags ) {
          let cmpnt, effectiveTag;
          [cmpnt, effectiveTag] = LogTag.decodeTag(tag);
 // console.log('in set, setting tag: ' + tag + ', cmpnt: ' + cmpnt + ', eff tag: ' + effectiveTag);
@@ -99,6 +109,9 @@ export default class LogTag {
       if (tags.length === 0) {
          LogTag.clearAll();
          return;
+      }
+      if (Array.isArray(tags[0])) {
+         tags = tags[0];
       }
       for (const tag of tags) {
          let cmpnt, effectiveTag;
@@ -128,9 +141,12 @@ export default class LogTag {
       return (effectiveTag & LogTag.#tagSets[cmpnt]) != 0;
    }
 
-   static areSet(tags) {
+   static areSet(...tags) {
       let modeAll = !!LogTag.isSet(LogTag.ALLOF);
-
+      
+      while (Array.isArray(tags[0])) {
+         tags = tags[0];
+      }
       for (let i = 0; i < tags.length; i++) {
          let tag = tags[i];
 
@@ -156,38 +172,38 @@ export default class LogTag {
    }
 
    // doesn't seem to be a way to avoid evaluating o. oh well
-  static log(o, ...tags) {
-//      console.log(`log: tags are: ${tags}`);
-    if (tags.length) { tags = tags.flat(); }
-    if (tags.length === 0 || LogTag.areSet(tags)) {
-      console.log(o);
-      return true;
-    }
-    return false;
-  }
+   static log(o, ...tags) {
+// console.log(`log: tags are: ${tags}`);
+
+      if (tags.length === 0 || LogTag.areSet(tags)) {
+         console.log(o);
+         return true;
+      }
+      return false;
+   }
 
    // returns component key for name, 
    // aka, array index of component
    static #getComponentByName(name) {
 
  //console.log(`in getComponent with name: ${name}`);
-     let cmpnts = LogTag.#components;
-     let indx = cmpnts.indexOf(name);
+      let cmpnts = LogTag.#components;
+      let indx = cmpnts.indexOf(name);
 
 // console.log(`in getComponent with name: ${name}, indx: ${indx}`);
 
-     if (indx === -1) {
-       if (cmpnts.length === LogTag.#maxComponents) {
-         console.warn(`Can't add more components. full at: ${LogTag.#maxComponents}`);
-         return LogTag.#maxComponents; // we are full
-       }
-
-       cmpnts.push(name);
-       LogTag.#buffer.resize(LogTag.#buffer.byteLength + LogTag.#bytesPerComponent);
-       indx = cmpnts.length - 1;
-// console.log(`added component name: ${name}, indx: ${indx}, cmpnts length: ${cmpnts.length}`);
+      if (indx === -1) {
+         if (cmpnts.length === LogTag.#maxComponents) {
+            console.warn(`Can't add more components. full at: ${LogTag.#maxComponents}`);
+            return LogTag.#maxComponents; // we are full
+         }
+         
+         cmpnts.push(name);
+         LogTag.#buffer.resize(LogTag.#buffer.byteLength + LogTag.#bytesPerComponent);
+         indx = cmpnts.length - 1;
+ // console.log(`added component name: ${name}, indx: ${indx}, cmpnts length: ${cmpnts.length}`);
       } 
-     return indx;
+      return indx;
    }
 
    // component: a string name of the component
@@ -210,31 +226,32 @@ export default class LogTag {
          throw new RangeError(`Can't add component: there are already ${LogTag.#maxComponents}`, 'LogTag.defTags');
       case 0:
          scope = LogTag;
-         for (let indx = 0; indx < tags.length && indx < LogTag.#maxTagNum - 1n; indx++) {
-            map[tags[indx]] = 2n**BigInt(indx+1);
-// console.log(`creating LogTag scope Tag: ${tags[indx]} = ${map[tags[indx]].toString(16)}`);            
+         for (let indx = 0; indx < tags.length && indx < LogTag.#maxTagNum - 1n ; indx++ ) {
+            map[tags[indx]] = LogTag.encodeTag(0, indx+1);
+
+ // console.log(`creating LogTag scope Tag: ${tags[indx]} = ${map[tags[indx]].toString(16)}`);            
+
          }
-         classConst(scope, map);
          break;
       default:
          if (tags.length < 1 || tags.length > LogTag.#maxTagNum) {
             throw new RangeError(`Wrong number of tags, (${tags.length}), must be >= 1 and <= ${LogTag.#maxTagNum}`, 'logtag.js#defTags')
          }
-         const cmpt = BigInt(componentKey) << LogTag.#maxTagNum;
+         //const cmpt = BigInt(componentKey) << LogTag.#maxTagNum;
          const prefix = component + '_';
          tags.forEach( (tag, indx) => { 
             if (! (typeof tag === 'string')) {
                throw new TypeError('tag names must be strings', 'logtag.js#defTags');
             }
-            // LogTag.tag instead of LogTag._tag
-            map[prefix + tag] = cmpt | (2n**BigInt(indx));
-// console.log(`adding tag ${prefix + tag} = ${map[prefix + tag].toString(16)}`);
+            map[prefix + tag] = LogTag.encodeTag(componentKey, indx);
+
+ // console.log(`adding tag ${prefix + tag} = ${map[prefix + tag].toString(16)}`);
+
          });
-         classConst(scope, map);
       }
+      classConst(scope, map);
    }
 }
-
 
 // a sanitized and limited version of classConst
 // this will never overwrite an existing property/object
