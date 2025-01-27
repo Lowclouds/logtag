@@ -1,6 +1,6 @@
 {
    "name": "@lowclouds/logtag",
-   "version": "0.3.0",
+   "version": "0.3.1",
    "description": "Tagged logging, always available",
    "type": "module",
    "scripts": {
