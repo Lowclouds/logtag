@@ -3,6 +3,8 @@ Tagged logging that is always available
 
 Do you hate having to comment and uncomment log calls when trying to debug? If so, then this library is for you. It allows you to define up to 511 'components', each with up to 32 tags, which you can individually set or clear from the console while your code is running in a browser. If your code is on the server, well maybe you can hack this to make it work there; I don't know.
 
+Note, this is the last version without the puts macro hinted at below. Following versions will have build time dependencies on babel if you decide to use the puts macro. Otherwise, you'll just get a larger, and unused, tool chain when you install.
+
 First, how to set up and use it.
 
 ## Set up and use
@@ -30,9 +32,9 @@ LogTag.defTags('TRTL', ['INIT', 'DRAW', 'SETTINGS', 'CONTOURS']);
 The first argument to defTags is a string component name, and the second argument is an array of tag names. I like to keep them all relatively short, but that is personal preference. Now, wherever you have a debug log statement, you can replace it with the following:
 
 ```js
-LogTag.log(logInfo, [COMP1_AREA1, AFILE_TAGMIDDLE, TRTL_CONTOURS]);
-   or
 LogTag.log(logInfo, COMP1_AREA1, AFILE_TAGMIDDLE, TRTL_CONTOURS);
+   or
+LogTag.log(logInfo, [COMP1_AREA1, AFILE_TAGMIDDLE, TRTL_CONTOURS]);
 ```
 
 When you run your code and it hits this line, nothing will log. Yay!
@@ -57,9 +59,9 @@ Ok, those are the essentials of usage; how does this work?
 ## What nasty things are happening here?
 
 ### LogTag.init(optional_config)
-Well, if you're a purist, we can still get along, but you might not be all that happy about this. LogTag.init(), by default, will put two properties into the global namespace, '**LogTag**', and '**puts**'. These will be **immutable, enumerable constants**. Inserting them in the global scope is the only way you'll be able to access them from the console. 
+Well, if you're a purist, we can still get along, but you might not be all that happy about this. LogTag.init(), by default, will put two properties into the global namespace, '**LogTag**', and '**puts**'. These will be **immutable, enumerable constants**. Inserting them in the global scope is the only way you'll be able to access them from the console. (I've done this using DBUS on embedded Linux apps, but you'd need a syslog, too.)
 
-LogTag.init() should only be called once in your app. This is because every method is static and there is only one set of tags for the entire app. 
+LogTag.init() should only be called once in your app. This is because every method is static and there is only one set of tags for the entire app.
 
 **optional_config** is an object with the following possibilities:
 
@@ -94,7 +96,7 @@ The LogTag.defTags method creates variables by gluing the component name to the 
 complete_tagname = component_name + '_' + tag_name;
 ```
 
-LogTag itself creates a component with an empty component_name, which is component zero. You can define tags in this component by supplying an empty component name. There are only 31 available tags in this component because LogTag.ALLOF uses the first tag.
+LogTag itself creates a component with an empty component_name, which is component zero. You can define tags in this component by supplying an empty component name. There are only 31 available tags in this component because LogTag.ALLOF uses the first tag bit.
 
 Since the generated tags are also immutable constants, if you're using HMR and you redefine the tags in a file that gets replaced, it will break when trying to redefine the constants. You'll need to reload the whole shebang.
 
@@ -109,6 +111,8 @@ This function tests whether the tags are set and if so, calls console.log(stuff)
 ### LogTag.set(...tags)
 
 LogTag.set accepts an arbitrary number of tags as arguments and then sets them. Sets, as in ORs them into a Uint32Array element. 
+
+**Note**, it is more efficient to supply  tags as separate parameters, although it will accept an array of tags. This applies for clear, isSet, areSet, and log methods also. defTags, above requires an array of tags.
 
  The single tag defined by LogTag is ALLOF, which is always local to the LogTag object, i.e. LogTag.ALLOF. 
 
@@ -125,7 +129,7 @@ LogTag.clear();                        // ends up calling clearAll()
 
 Test tag to see if it is set. This is useful if you have to do a lot of work to create the log.
 
-**areSet** will test if all of an array of tags are set
+**areSet** will test if **any** of the tags are set, but see ALLOF, below.
 
 ```js
 if (LogTag.isSet(MY_BLOATEDTAG) {
@@ -144,7 +148,7 @@ if (LogTag.isSet(MY_BLOATEDTAG) {
 
 By default, if **any** tag in a log statement is set, the log happens. This is ANYOF mode, but since there are only two modes, ANYOF and ALLOF, we only need to turn one of them off or on. ALLOF it is.
 
-When areSet is operating in ALLOF mode, all tags in the log statement must be set before the log happens. This is mostly obscure, but you might find a use for it. To use ALLOF mode, do this:
+When areSet is operating in ALLOF mode, **all** tags in the log statement must be set before the log happens. This is mostly obscure, but you might find a use for it. To use ALLOF mode, do this:
 
 ```js
 LogTag.set(LogTag.ALLOF);       // turn it on programmatically, or on console.
@@ -154,7 +158,8 @@ puts('intricately related log', [COMPLICATED_A, COMPLICATED_C, OTHER_THING1]);
 LogTag.clear(LogTag.ALLOF);     // turn it off programmatically, or on console.
 ```
 
-Alternately, you can put the ALLOF tag directly in the log statement. Here, it works slightly differently: all tags following LogTag.ALLOF must be set if the log hasn't fired by the time it processes the LogTag.ALLOF tag. Example:
+Alternately, you can put the ALLOF tag directly in the log statement. Here, it works slightly differently: all tags following LogTag.ALLOF must be set if the log hasn't fired by the time it processes the LogTag.ALLOF tag. 
+Example:
 
 ```js
 puts(interesting_info, [TRTL_SETTINGS, LogTag.ALLOF, NTRP_PROGRESS, NTRP_SETTINGS]);
@@ -181,9 +186,9 @@ if (LogTag.areSet([t1,t2,...,t3]) {puts(info);}
 // which is clumsy to type in every time
 ```
 
-I haven't totally figured out how to make macros work in Javascript, yet, but I do have a working version of a 'puts' Babel plugin macro that will produce this transformation at build time. Still working out how to put it into an  existing project.
+As mentioned above, this is the last version that doesn't include a babel macro to transform puts(...) into something that should be much faster with logs are disabled, or remove the entire log, if desired. It's still true, that I don't know how to integrate into arbitrary build environments, but babel will correctly transform the files.
 
- There is also an old cpp.js library that will support this macro, and that is why LogTag.log() takes only two args, instead of a bunch of args. cpp.js does not support variadic macros - it barely supports function macros. Anyway, if you want to use this functionality, but lose it in production code, I'd recommend looking into cpp.js.
+With respect to speed, the first try at this library using Uint32 ArrayBuffers had a fundamental flaw that limited you to 5 components with 32 tags each, and it failed silently when exceeding that limit. The second version, 0.2.0 used a BigInt implementation. Version 0.3.0 reverts to using a working version of Uint32Array buffers, with up to 511 components, and is nearly 4x faster than the straight BigInt version. 
 
-With respect to speed, the first try at this library using Uint32 ArrayBuffers had a fundamental flaw that limited you to 5 components with 32 tags each, and it failed silently when exceeding that limit. The second version, 0.2.0 used a BigInt implementation. Version 0.3.0 reverts to using a working version of Uint32Array buffers, with up to 511 components, and is nearly 4x faster than the straight BigInt version. Since the external interface is backward compatible, I recommend using this version.
+This version, v0.3.2 is slightly slower than v0.3.1 because of support for both arrays of tags or separate tag parameters in the method calls. It is more robust and forgiving, though, and the penalty is small (on the order of 0.00001 sec/call, so once again: since the external interface is backward compatible, I recommend using this version.
 

@@ -4,7 +4,9 @@ import {mkdirSync, rmSync, cpSync} from 'node:fs';
 
 rmSync('./dist', {force: true, recursive: true},);
 
+mkdirSync('./dist');
 cpSync('./src/logtag.js', './dist/logtag.js');
+
 
 
 
