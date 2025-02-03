@@ -1,9 +1,10 @@
+
 # @lowclouds/logtag
 Tagged logging that is always available
 
 Do you hate having to comment and uncomment log calls when trying to debug? If so, then this library is for you. It allows you to define up to 511 'components', each with up to 32 tags, which you can individually set or clear from the console while your code is running in a browser. If your code is on the server, well maybe you can hack this to make it work there; I don't know.
 
-Note, this is the last version without the puts macro hinted at below. Following versions will have build time dependencies on babel if you decide to use the puts macro. Otherwise, you'll just get a larger, and unused, tool chain when you install.
+This provides two related but independent bits: the LogTag object which does the actual tagged logging, and a build-time macro that can make it more efficient or remove it entirely from the build. The logging part is described first, then the usage of the macro.
 
 First, how to set up and use it.
 
@@ -166,6 +167,65 @@ puts(interesting_info, [TRTL_SETTINGS, LogTag.ALLOF, NTRP_PROGRESS, NTRP_SETTING
 ```
 This will log if TRTL_SETTINGS is set, but if not, then only if NTRP_PROGRESS **and** NTRP_SETTINGS are set. Obviously, putting LogTag.ALLOF first in the list of tags will make it operate just like setting LogTag.ALLOF globably. Note that LogTag.ALLOF does not have to be set in this case, its mere presence turns the mode on or off for this one log statement. Indeed, if you use it in the log statement, then it usually **should not** be set.
 
+# The puts macro
+When you install logtag, the devDependencies will now pull in the chunks babel needed to use the macro. If you download the project from github, you'll need node v22 to run the macro tests.
+
+## Configuration
+This is installed alongside logtag.js as puts.macro. puts.macro is a babel-plugin-macro which can morph the puts(...) call at build time to optimize the test, to swap out either the test or the log function, or to remove the entire call. It supports the following options:
+
+    * testFn: <string> defaults to 'LogTag.areSet',
+    * logFn: <string> defaults to 'console.log',
+    * doRemove: <boolean> defaults to false
+
+These are set in your babel.config.js file like so:
+
+```js
+  ...
+   plugins: [
+      {
+         "macros", puts: {doRemove: false, testFn: 'LogTag.areSet', logFn: 'console.log'},
+      },
+   ],
+...
+```
+
+Configuration can be done in webpack.config.js, too. Not sure how other bundlers deal with babel.
+
+## Usage
+### Default 
+To use the macro in a file where you have puts(....) calls, insert
+
+```js
+import {puts} from '@lowclouds/logtag/macro/puts.macro' 
+  ...
+puts('useful info', MY_TAG);
+  ...   
+```
+By default, every puts call will be transformed into this:
+
+```js
+LogTag.areSet(tags...) ? console.log('useful info') : void 0;
+```
+### Specify a different log function
+From the command line, you can invoke ./node_modules/.bin/babel yourSrc --out-dir somepath to transform the files.
+
+If you configure the log function to be say, {logFn: 'myLogger'}, then you will get this, instead:
+
+```js
+LogTag.areSet(tags...) ? myLogger('useful info') : void 0;
+```
+### Specify a different test function
+Likewise, setting {testFn: 'myTest'} will give you:
+
+```js
+myTest(tags...) ? console.log('useful info') : void 0;
+```
+Your test function will be passed in the 'tag' arguments, over which you have complete control.  **Note** that the puts macro is completely separate from the LogTag object - it just looks for a call expression named 'puts' - so you can implement whatever testing, tagging, and logging functions you want as long as you call it with 'puts(...)' and have a test and log function.
+
+### Remove from output entirely
+
+Finally, setting {doRemove: true} will remove the entire statement from the generated file.
+
 ## Am I missing something?
 
 Yes. This design started while debugging realtime firmware in printers, with three primary goals:
@@ -186,9 +246,9 @@ if (LogTag.areSet([t1,t2,...,t3]) {puts(info);}
 // which is clumsy to type in every time
 ```
 
-As mentioned above, this is the last version that doesn't include a babel macro to transform puts(...) into something that should be much faster with logs are disabled, or remove the entire log, if desired. It's still true, that I don't know how to integrate into arbitrary build environments, but babel will correctly transform the files.
+It's still true, that I don't know how to integrate into arbitrary build environments, but babel will correctly transform the files. I'm hoping you'll tell me how to configure this for your build and I'll include that info here.
 
 With respect to speed, the first try at this library using Uint32 ArrayBuffers had a fundamental flaw that limited you to 5 components with 32 tags each, and it failed silently when exceeding that limit. The second version, 0.2.0 used a BigInt implementation. Version 0.3.0 reverts to using a working version of Uint32Array buffers, with up to 511 components, and is nearly 4x faster than the straight BigInt version. 
 
-This version, v0.3.2 is slightly slower than v0.3.1 because of support for both arrays of tags or separate tag parameters in the method calls. It is more robust and forgiving, though, and the penalty is small (on the order of 0.00001 sec/call, so once again: since the external interface is backward compatible, I recommend using this version.
+This version is slightly slower than the 0.3.1 because of support for both arrays of tags or separate tag parameters in the method calls. It is more robust and forgiving, though, and the penalty is small (on the order of 0.00001 sec/call, so once again: since the external interface is backward compatible, I recommend using this version.
 

@@ -1,5 +1,5 @@
 import {execFileSync} from 'node:child_process';
-let tests = ['test1.js', 'test2.js', 'stress-test.js']
+let tests = ['test1.js', 'test2.js', 'stress-test.js', 'do-macro-tests.js']
 
 tests.forEach((t) => {
 //   exec(`node ./test/${t}`, (error, stdout, stderr) => {
@@ -17,3 +17,4 @@ tests.forEach((t) => {
       }
    }
 });
+

@@ -1,0 +1,14 @@
+{
+   "plugins": [
+    [
+      "macros",
+      {
+         "puts": {"doRemove": true},
+      },
+    ],
+  ],
+   "targets": {
+      "firefox": "130",
+      "chrome": "130",
+  }
+}

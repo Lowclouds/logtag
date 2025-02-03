@@ -1,0 +1,82 @@
+const {createMacro} = require('babel-plugin-macros');
+const {template} = require("@babel/template");
+
+module.exports = createMacro(puts, {configName: 'puts'});
+
+/*
+  puts expects one or two arguments
+  arg1: something to log
+  arg2: a single flag an array of flags
+*/
+function puts({references, state, babel, config}) {
+   const t = babel.types;
+   let cnt = 0, repl = 0;
+   let {doRemove = false, testFn = 'LogTag.areSet', logFn = 'console.log'} = config;
+
+   console.log(`doRemove: ${doRemove}, testFn: ${testFn}, logFn: ${logFn}`);
+
+   //console.log(references);
+
+   references['puts'].forEach(refpath => { // 
+      
+      //console.log(`\nputs refpath:\n`, refpath);
+
+      const callExpression = refpath.parentPath;
+
+      // console.log(`\ncallExpression\n`, callExpression);
+
+      if (callExpression.isCallExpression()) {
+         cnt++;
+         if ( doRemove ) {
+            callExpression.remove();
+            repl++;
+            //console.log('removed puts!');
+         } else {
+            const args = callExpression.node.arguments;
+// console.log(`puts has ${args.length} args`);
+            switch (args.length) {
+            case 0: 
+               callExpression.replaceWithSourceString(`${logFn}()`);
+               repl++;
+               break;
+            case 1: {
+               let ast = t.callExpression(t.Identifier(logFn), args);
+               callExpression.replaceWith(ast);
+               repl++;
+            }
+               break;
+            case 2: {
+               if (t.isArrayExpression(args[1])) {
+                  let se = t.spreadElement(args[1]);
+                  args[1] = se;
+               }
+               const tmpl = babel.template(
+                  `if(${testFn}(%%FLAGS%%)) ${logFn}(%%INFO%%)`
+               );
+               const ast = tmpl({
+                  INFO: args[0],
+                  FLAGS: args[1]
+               });
+               // console.log(ast);
+               callExpression.replaceWith(ast);
+               repl++;
+            }
+               break;
+            default:
+               // n tag parameters, presumably
+               // args stays the same
+               const info = args.shift();
+               const ast = t.conditionalExpression(
+                  t.callExpression(t.identifier(testFn), args),
+                  t.callExpression(t.identifier(logFn), [info]),
+                  t.unaryExpression('void', t.numericLiteral(0)));
+                  
+               callExpression.replaceWith(ast);
+               repl++
+               return;
+            }
+         }
+      }
+   });
+   console.log(`replaced ${repl} of ${cnt} instances of puts(...)`);
+}

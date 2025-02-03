@@ -1,0 +1,19 @@
+{
+   "plugins": [
+    [
+      "macros",
+      {
+         "puts": {
+            "doRemove": false, 
+            "testFn": 'DEBUG && LogTag.areSet', 
+            "logFn": 'myLogger'
+         },
+      },
+    ],
+  ],
+  targets: {
+     chrome: "130",
+     firefox: "130"
+  }
+}
+

@@ -1,0 +1,15 @@
+{
+   "plugins": [
+    [
+      "macros",
+      {
+         "puts": {"testFn": 'myTestFn', "logFn": 'myLogger'},
+      },
+    ],
+  ],
+   "targets": {
+      "firefox": "130",
+      "chrome": "130",
+  }
+}
+

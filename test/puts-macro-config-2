@@ -1,0 +1,15 @@
+{
+   "plugins": [
+    [
+      "macros",
+      {
+         "puts": {"testFn": "LogTag.areSet", "logFn": "myLogger"},
+      },
+    ],
+  ],
+   "targets": {
+      "firefox": "130",
+      "chrome": "130",
+  }
+}
+

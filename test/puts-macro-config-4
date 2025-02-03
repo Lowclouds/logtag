@@ -1,0 +1,15 @@
+{
+   "plugins": [
+    [
+      "macros",
+      {
+         "puts": {"testFn": 'false && dummy'},
+      },
+    ],
+  ],
+   "targets": {
+      "firefox": "130",
+      "chrome": "130",
+  }
+}
+

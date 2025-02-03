@@ -1,7 +1,9 @@
 .DS_Store
-node_modules
-package-lock.json
-test
 .env
 .env.*
+node_modules
+package-lock.json
 src
+scripts
+test
+sample-babel.config.js

@@ -1,0 +1,13 @@
+{
+   "plugins": [
+    [
+      "macros",
+       { },
+    ],
+   ],
+   "targets": {
+    "firefox": "130",
+    "chrome": "130",
+  }
+}
+

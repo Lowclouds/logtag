@@ -1,8 +1,7 @@
 {
    "name": "@lowclouds/logtag",
-   "version": "0.3.2",
-   "description": "Tagged logging, always available",
-   "type": "module",
+   "version": "0.9.0",
+   "description": "Tagged logging, always available, plus a puts macro",
    "scripts": {
       "dist": "node ./scripts/dist.js",
       "test": "node ./scripts/do-tests.js"
@@ -15,7 +14,11 @@
       "log",
       "tags",
       "tagged",
-      "logging"
+      "logging",
+      "debugging",
+      "testing",
+      "macro",
+      "babel-plugin-macro"
    ],
    "author": "Lowclouds <dcd@coastallowclouds.com>",
    "license": "Beer License",
@@ -23,6 +26,16 @@
       "url": "https://github.com/Lowclouds/logtag/issues"
    },
    "homepage": "https://github.com/Lowclouds/logtag#readme",
-   "module": "./dist/logtag.js",
-   "exports": "./dist/logtag.js"
+   "type": "module",
+   "main": "./dist/logtag.js",
+   "exports": {
+      ".": "./dist/logtag.js",
+      "./macro/puts.macro": "./macro/puts.macro"
+   },
+  "dependencies": {
+      "@babel/cli": "^7.26.4",
+      "@babel/core": "^7.26.7",
+      "@babel/template": "^7.25.9",
+      "babel-plugin-macros": "^3.1.0"
+   }
 }
