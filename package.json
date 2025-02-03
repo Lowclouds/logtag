@@ -28,11 +28,7 @@
    "homepage": "https://github.com/Lowclouds/logtag#readme",
    "type": "module",
    "main": "./dist/logtag.js",
-   "exports": {
-      ".": "./dist/logtag.js",
-      "./macro/puts.macro": "./macro/puts.macro"
-   },
-  "dependencies": {
+   "dependencies": {
       "@babel/cli": "^7.26.4",
       "@babel/core": "^7.26.7",
       "@babel/template": "^7.25.9",

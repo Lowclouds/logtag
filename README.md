@@ -168,7 +168,11 @@ puts(interesting_info, [TRTL_SETTINGS, LogTag.ALLOF, NTRP_PROGRESS, NTRP_SETTING
 This will log if TRTL_SETTINGS is set, but if not, then only if NTRP_PROGRESS **and** NTRP_SETTINGS are set. Obviously, putting LogTag.ALLOF first in the list of tags will make it operate just like setting LogTag.ALLOF globably. Note that LogTag.ALLOF does not have to be set in this case, its mere presence turns the mode on or off for this one log statement. Indeed, if you use it in the log statement, then it usually **should not** be set.
 
 # The puts macro
-When you install logtag, the devDependencies will now pull in the chunks babel needed to use the macro. If you download the project from github, you'll need node v22 to run the macro tests.
+When you install logtag, its dependencies will pull in the chunks of babel needed to use the macro. If you download the project from github, you'll need node v22 to run the macro tests.
+
+**Important: create a babel.config.json file!!!**
+
+There is a sample-babel-config.json file in the package directory which you can copy and rename into your project root, or use it as a template to modify existing your babel config. If you forget this step, **nothing** will happen.
 
 ## Configuration
 This is installed alongside logtag.js as puts.macro. puts.macro is a babel-plugin-macro which can morph the puts(...) call at build time to optimize the test, to swap out either the test or the log function, or to remove the entire call. It supports the following options:
@@ -188,15 +192,15 @@ These are set in your babel.config.js file like so:
    ],
 ...
 ```
-
 Configuration can be done in webpack.config.js, too. Not sure how other bundlers deal with babel.
 
 ## Usage
+
 ### Default 
 To use the macro in a file where you have puts(....) calls, insert
 
 ```js
-import {puts} from '@lowclouds/logtag/macro/puts.macro' 
+import {puts} from '@lowclouds/logtag/puts.macro' 
   ...
 puts('useful info', MY_TAG);
   ...   
@@ -207,7 +211,6 @@ By default, every puts call will be transformed into this:
 LogTag.areSet(tags...) ? console.log('useful info') : void 0;
 ```
 ### Specify a different log function
-From the command line, you can invoke ./node_modules/.bin/babel yourSrc --out-dir somepath to transform the files.
 
 If you configure the log function to be say, {logFn: 'myLogger'}, then you will get this, instead:
 
@@ -225,6 +228,14 @@ Your test function will be passed in the 'tag' arguments, over which you have co
 ### Remove from output entirely
 
 Finally, setting {doRemove: true} will remove the entire statement from the generated file.
+
+### Manual testing
+
+From the command line, you can invoke 
+```js
+npx ./node_modules/.bin/babel yourSrc --out-dir somepath
+```
+to transform the file(s) for inspection.
 
 ## Am I missing something?
 
